@@ -1,19 +1,109 @@
+require 'spec_helper'
+
+class Person
+  include Neo4j::ActiveNode
+
+  property :name, type: String
+  property :age, type: Integer
+
+end
+
 describe 'Neo4j::ActiveNode queries' do
 
 
   # Copied from http://guides.rubyonrails.org/active_record_querying.html
 
   # http://guides.rubyonrails.org/active_record_querying.html#retrieving-a-single-object
+
   describe '1.1 Retrieving a Single Object' do
+
+    before(:each) { delete_db }
+
+    shared_context "people" do |attribute_list|
+      let(:people) do
+        attribute_list.each do |attributes|
+          Person.create(attributes)
+        end
+      end
+    end
 
     describe 'Using a Primary Key' do
       describe 'find' do
-        describe 'Client.find(10)' do
-          it 'finds the client with primary key (id) 10'
+        subject { Person.find(id) }
+        let(:id) { people.first.id }
+
+        include_context 'people', [] do
+          let(:id) { 0 }
+          it { should == nil }
+        end
+        include_context 'people', [{}] do
+          it { should == people.first }
+        end
+        include_context 'people', [{},{}] do
+          it { should == people.first }
         end
       end
-      describe 'take'
-      describe 'last'
+      describe 'take' do
+        subject { Person.take }
+
+        include_context 'people', [] do
+          it { should == nil }
+        end
+        include_context 'people', [{}] do
+          it { should == people.first }
+        end
+        include_context 'people', [{},{}] do
+          it { should == people.first }
+        end
+
+      end
+
+      describe 'first' do
+        subject { Person.first }
+
+        include_context 'people', [] do
+          it { should == nil }
+        end
+        include_context 'people', [{}] do
+          it { should == people.first }
+        end
+        include_context 'people', [{},{}] do
+          it { should == people.first }
+        end
+
+      end
+
+      describe 'last' do
+        subject { Person.last }
+
+        include_context 'people', [] do
+          it { should == nil }
+        end
+        include_context 'people', [{}] do
+          it { should == people.last }
+        end
+        include_context 'people', [{},{}] do
+          it { should == people.last }
+        end
+
+      end
+
+      describe 'find_by' do
+        subject { Person.find_by name: 'Brian' }
+
+        include_context 'people', [{name: 'Brian'}, {name: 'Andreas'}] do
+          it { should == people.first }
+        end
+
+        include_context 'people', [{name: 'Andreas'}, {name: 'Brian'}] do
+          it { should == nil }
+        end
+
+        include_context 'people', [{name: 'Brian!'}, {name: 'Andreas'}] do
+          it { should == nil }
+        end
+      end
+
       # ...
     end
 

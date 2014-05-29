@@ -15,18 +15,17 @@ describe 'Neo4j::ActiveNode queries' do
 
   # http://guides.rubyonrails.org/active_record_querying.html#retrieving-a-single-object
 
-  describe '1.1 Retrieving a Single Object' do
+  before(:each) { delete_db }
 
-    before(:each) { delete_db }
-
-    shared_context "people" do |attribute_list|
-      let(:people) do
-        attribute_list.each do |attributes|
-          Person.create(attributes)
-        end
+  shared_context "people" do |attribute_list|
+    let(:people) do
+      attribute_list.each do |attributes|
+        Person.create(attributes)
       end
     end
+  end
 
+  describe '1.1 Retrieving a Single Object' do
     describe 'Using a Primary Key' do
       describe 'find' do
         subject { Person.find(id) }
@@ -112,7 +111,24 @@ describe 'Neo4j::ActiveNode queries' do
   describe '1.2 Retrieving Multiple Objects' do
     describe 'Using Multiple Primary Keys' do
       describe 'Client.find([1, 10])' do
-        it 'finds the clients with primary keys 1 and 10'
+        subject { Person.find(ids) }
+
+        include_context 'people', [{name: 'Brian'}, {name: 'Andreas'}] do
+          context 'two ids' do
+            let(:ids) { [people.first.id, people.last.id] }
+            it { should == people }
+          end
+          context 'one id' do
+            let(:ids) { [people.last.id] }
+            it { should == [people.last] }
+          end
+          context 'one existing ID, one non-existing ID' do
+            let(:ids) { [people.first.id, 99999999999] }
+            it { should == [people.first] }
+          end
+
+        end
+
       end
 
     end

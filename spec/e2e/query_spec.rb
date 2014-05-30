@@ -49,10 +49,10 @@ describe 'Neo4j::ActiveNode queries' do
           it { should == nil }
         end
         include_context 'people', [{}] do
-          it { should == people.first }
+          it { should be_a Person }
         end
         include_context 'people', [{},{}] do
-          it { should == people.first }
+          it { should be_a Person }
         end
 
       end
@@ -113,7 +113,7 @@ describe 'Neo4j::ActiveNode queries' do
       describe 'Client.find([1, 10])' do
         subject { Person.find(ids) }
 
-        include_context 'people', [{name: 'Brian'}, {name: 'Andreas'}] do
+        include_context 'people', [{}, {}] do
           context 'two ids' do
             let(:ids) { [people.first.id, people.last.id] }
             it { should == people }
@@ -131,14 +131,84 @@ describe 'Neo4j::ActiveNode queries' do
 
       end
 
+      describe '#take(n)' do
+        subject { Person.take(n).map(&:class) }
+
+        include_context 'people', [] do
+          (0..2).each do |i|
+            context "n = #{i}" do
+              let(n) { i }
+              it { should == [] }
+            end
+          end
+        end
+        include_context 'people', [{}] do
+          context "n = 0" do
+            it { should == [] }
+          end
+          context "n = 1" do
+            it { should == [Person] }
+          end
+          context "n = 2" do
+            it { should == [Person] }
+          end
+        end
+      end
+
+      [:first, :last].each do |method|
+        describe "##{method}(n)" do
+          subject { Person.send(method, n) }
+
+          include_context 'people', [] do
+            (0..2).each do |i|
+              context "n = #{i}" do
+                let(n) { i }
+                it { should == [] }
+              end
+            end
+          end
+          include_context 'people', [{}] do
+            context "n = 0" do
+              it { should == [] }
+            end
+            context "n = 1" do
+              it { should == people }
+            end
+            context "n = 2" do
+              it { should == people }
+            end
+          end
+          include_context 'people', [{}] do
+            context "n = 0" do
+              it { should == [] }
+            end
+            context "n = 1" do
+              it { should == people.send(method) }
+            end
+            context "n = 2" do
+              it { should == people }
+            end
+          end
+        end
+      end
+
+
+
     end
 
   end
 
 
   describe '1.3 Retrieving Multiple Objects in Batches' do
-    describe 'User.all' do
-
+    describe 'User.find_each' do
+      it 'should execute multiple queries'
+      it 'should use :batch_size'
+      it 'should use :start'
+    end
+    describe 'User.find_in_batches' do
+      it 'should yield multiple times'
+      it 'should use :batch_size'
+      it 'should use :start'
     end
     # ...
   end
@@ -156,7 +226,8 @@ describe 'Neo4j::ActiveNode queries' do
   end
 
   describe '2.3 Hash Conditions' do
-
+    it 'allows querying of properties'
+    it 'allows querying of relationships'
   end
 
 
@@ -219,3 +290,4 @@ describe 'Neo4j::ActiveNode queries' do
 
   end
 end
+

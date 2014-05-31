@@ -16,10 +16,16 @@ module Neo4j::ActiveNode
         new_query(:limit, *args)
       end
 
+      def take(count = nil)
+        new_query.take(count)
+      end
+
       private
 
-      def new_query(method, *args)
-        Query.new(self.to_s).send(method, *args)
+      def new_query(method = nil, *args)
+        query = Query.new(self.to_s)
+
+        method ? query.send(method, *args) : query
       end
     end
   end

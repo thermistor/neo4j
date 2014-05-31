@@ -19,7 +19,7 @@ describe 'Neo4j::ActiveNode queries' do
 
   shared_context "people" do |attribute_list|
     let(:people) do
-      attribute_list.each do |attributes|
+      attribute_list.map do |attributes|
         Person.create(attributes)
       end
     end
@@ -49,7 +49,7 @@ describe 'Neo4j::ActiveNode queries' do
           it { should == nil }
         end
         include_context 'people', [{}] do
-          it { should be_a Person }
+          it { require 'pry'; binding.pry; should be_a Person }
         end
         include_context 'people', [{},{}] do
           it { should be_a Person }
@@ -137,7 +137,7 @@ describe 'Neo4j::ActiveNode queries' do
         include_context 'people', [] do
           (0..2).each do |i|
             context "n = #{i}" do
-              let(n) { i }
+              let(:n) { i }
               it { should == [] }
             end
           end
@@ -162,7 +162,7 @@ describe 'Neo4j::ActiveNode queries' do
           include_context 'people', [] do
             (0..2).each do |i|
               context "n = #{i}" do
-                let(n) { i }
+                let(:n) { i }
                 it { should == [] }
               end
             end

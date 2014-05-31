@@ -14,14 +14,17 @@ module Neo4j::ActiveNode
             if arg.is_a?(String) && self.respond_to?(:from_string)
               self.from_string arg
 
-            elsif arg.is_a?(Hash) && self.respond_to?(:from_hash)
+            elsif arg.is_a?(Integer) && self.respond_to?(:from_integer)
+              self.from_integer arg
+
+            elsif arg.is_a?(Hash) && self.respond_to?(:from_field_and_value)
               arg.map do |key, value|
-                self.from_hash key, value
+                self.from_field_and_value key, value
               end
 
             elsif arg.is_a?(Array) && self.respond_to?(:from_string)
               arg.map do |value|
-                self.from_string value
+                self.from_args value
               end
 
             else
@@ -40,11 +43,11 @@ module Neo4j::ActiveNode
       @keyword = 'WHERE'
 
       class << self
-        def from_string(string)
-          string
+        def from_string(value)
+          value
         end
 
-        def from_hash(field, value)
+        def from_field_and_value(field, value)
           "#{field}=`#{value}`"
         end
 
@@ -58,13 +61,17 @@ module Neo4j::ActiveNode
     class MatchCondition < Condition
       @keyword = 'MATCH'
 
+      def value
+        "(#{@value})"
+      end
+
       class << self
-        def from_string(string)
-          string
+        def from_string(value)
+          value
         end
 
-        def from_hash(variable, label)
-          "#{variable}:#{label}"
+        def from_field_and_value(field, label)
+          "#{field}:#{label}"
         end
 
         def condition_string(conditions)
@@ -72,6 +79,57 @@ module Neo4j::ActiveNode
         end
       end
     end
+
+    class OrderCondition < Condition
+      @keyword = 'ORDER'
+
+      class << self
+        def from_string(value)
+          value
+        end
+
+        def from_field_and_value(field, label)
+          "#{field} #{label}"
+        end
+
+        def condition_string(conditions)
+          conditions.map(&:value).join(', ')
+        end
+      end
+    end
+
+    class LimitCondition < Condition
+      @keyword = 'LIMIT'
+
+      class << self
+        def from_string(value)
+          value.to_i
+        end
+
+        def from_integer(value)
+          value
+        end
+
+        def condition_string(conditions)
+          conditions.last.value
+        end
+      end
+    end
+
+    class ReturnCondition < Condition
+      @keyword = 'RETURN'
+
+      class << self
+        def from_string(value)
+          value
+        end
+
+        def condition_string(conditions)
+          conditions.map(&:value).join(', ')
+        end
+      end
+    end
+
 
   end
 end

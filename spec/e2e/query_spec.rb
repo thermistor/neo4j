@@ -8,8 +8,23 @@ class Person
 
 end
 
+module WithPeople
+  def with_people(attributes)
+    context "with people #{attributes.inspect}" do
+      let!(:people) do
+        puts 'attribute_list', attribute_list.inspect
+        attribute_list.map do |attributes|
+          Person.create(attributes)
+        end
+        yield
+      end
+    end
+  end
+end
+
 describe 'Neo4j::ActiveNode queries' do
 
+  extend WithPeople
 
   # Copied from http://guides.rubyonrails.org/active_record_querying.html
 
@@ -17,12 +32,11 @@ describe 'Neo4j::ActiveNode queries' do
 
   before(:each) { delete_db }
 
-  shared_context "people" do |attribute_list|
-    let(:people) do
-      attribute_list.map do |attributes|
-        Person.create(attributes)
-      end
-    end
+  shared_context 'people' do
+  end
+
+  let!(:people) do
+    people_attributes.map {|attributes| Person.create(attributes) }
   end
 
   describe '1.1 Retrieving a Single Object' do
@@ -31,27 +45,33 @@ describe 'Neo4j::ActiveNode queries' do
         subject { Person.find(id) }
         let(:id) { people.first.id }
 
-        include_context 'people', [] do
+        context 'no people' do
+          let(:people_attributes) { [] }
           let(:id) { 0 }
           it { should == nil }
         end
-        include_context 'people', [{}] do
+        context 'one person' do
+          let(:people_attributes) { [{}] }
           it { should == people.first }
         end
-        include_context 'people', [{},{}] do
+        context 'two people' do
+          let(:people_attributes) { [{},{}] }
           it { should == people.first }
         end
       end
       describe 'take' do
         subject { Person.take }
 
-        include_context 'people', [] do
+        context 'no people' do
+          let(:people_attributes) { [] }
           it { should == nil }
         end
-        include_context 'people', [{}] do
-          it { require 'pry'; binding.pry; should be_a Person }
+        context 'one person' do
+          let(:people_attributes) { [{}] }
+          it { should be_a Person }
         end
-        include_context 'people', [{},{}] do
+        context 'two people' do
+          let(:people_attributes) { [{},{}] }
           it { should be_a Person }
         end
 
@@ -60,13 +80,16 @@ describe 'Neo4j::ActiveNode queries' do
       describe 'first' do
         subject { Person.first }
 
-        include_context 'people', [] do
+        context 'no people' do
+          let(:people_attributes) { [] }
           it { should == nil }
         end
-        include_context 'people', [{}] do
+        context 'one person' do
+          let(:people_attributes) { [{}] }
           it { should == people.first }
         end
-        include_context 'people', [{},{}] do
+        context 'two people' do
+          let(:people_attributes) { [{},{}] }
           it { should == people.first }
         end
 
@@ -75,13 +98,16 @@ describe 'Neo4j::ActiveNode queries' do
       describe 'last' do
         subject { Person.last }
 
-        include_context 'people', [] do
+        context 'no people' do
+          let(:people_attributes) { [] }
           it { should == nil }
         end
-        include_context 'people', [{}] do
+        context 'one person' do
+          let(:people_attributes) { [{}] }
           it { should == people.last }
         end
-        include_context 'people', [{},{}] do
+        context 'two people' do
+          let(:people_attributes) { [{},{}] }
           it { should == people.last }
         end
 

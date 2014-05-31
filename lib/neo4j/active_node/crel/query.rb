@@ -8,13 +8,14 @@ module Neo4j::ActiveNode
       include Enumerable
 
       def each
-        Neo4j::Label.cypher_query(self.to_cypher).each do |node|
+        Neo4j::Label.cypher_query(self.to_cypher, @session).each do |node|
           yield node
         end
       end
 
-      def initialize(label)
-        @conditions = [MatchCondition.new("n:#{label}"), ReturnCondition.new('n')]
+      def initialize(label, session = Neo4j::Session.current)
+        @session = session
+        @conditions = [MatchCondition.new("n:#{label}"), ReturnCondition.new('ID(n)')]
       end
 
       def match(*args)

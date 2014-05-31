@@ -14,6 +14,9 @@ module Neo4j::ActiveNode
             if arg.is_a?(String) && self.respond_to?(:from_string)
               self.from_string arg
 
+            elsif arg.is_a?(Symbol) && self.respond_to?(:from_symbol)
+              self.from_symbol arg
+
             elsif arg.is_a?(Integer) && self.respond_to?(:from_integer)
               self.from_integer arg
 
@@ -81,15 +84,23 @@ module Neo4j::ActiveNode
     end
 
     class OrderCondition < Condition
-      @keyword = 'ORDER'
+      @keyword = 'ORDER BY'
 
       class << self
         def from_string(value)
-          value
+          if value.match('\.')
+            value
+          else
+            "n.#{value}"
+          end
+        end
+
+        def from_symbol(value)
+          from_string(value.to_s)
         end
 
         def from_field_and_value(field, label)
-          "#{field} #{label}"
+          "n.#{field} #{label.upcase}"
         end
 
         def condition_string(conditions)

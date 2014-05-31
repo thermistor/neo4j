@@ -20,10 +20,19 @@ module Neo4j::ActiveNode
         new_query.take(count)
       end
 
+      def first(count = nil)
+        new_query.first(count)
+      end
+
+      def last(count = nil)
+        new_query.last(count)
+      end
+
+
       private
 
       def new_query(method = nil, *args)
-        query = Query.new(self.to_s)
+        query = Query.new(self.to_s, self.neo4j_session)
 
         method ? query.send(method, *args) : query
       end

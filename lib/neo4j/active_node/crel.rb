@@ -28,6 +28,10 @@ module Neo4j::ActiveNode
         new_query.last(count)
       end
 
+      def find_by(attributes = {})
+        new_query.find_by(attributes)
+      end
+
 
       private
 

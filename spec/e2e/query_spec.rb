@@ -116,15 +116,13 @@ describe 'Neo4j::ActiveNode queries' do
       describe 'find_by' do
         subject { Person.find_by name: 'Brian' }
 
-        include_context 'people', [{name: 'Brian'}, {name: 'Andreas'}] do
+        context 'two people, one is Brian' do
+          let(:people_attributes) { [{name: 'Brian'}, {name: 'Andreas'}] }
           it { should == people.first }
         end
 
-        include_context 'people', [{name: 'Andreas'}, {name: 'Brian'}] do
-          it { should == nil }
-        end
-
-        include_context 'people', [{name: 'Brian!'}, {name: 'Andreas'}] do
+        context 'two people, neither is Brian' do
+          let(:people_attributes) { [{name: 'Brian!'}, {name: 'Andreas'}] }
           it { should == nil }
         end
       end

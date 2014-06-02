@@ -36,6 +36,16 @@ module Neo4j::ActiveNode
           end.flatten.map {|value| self.new(value) }
         end
 
+        def field(value)
+          if value.match(/\./)
+            value
+          elsif [:id, :neo_id].include?(value.to_sym)
+            'ID(n)'
+          else
+            "n.#{value}"
+          end
+        end
+
         def to_cypher(conditions)
           "#{@keyword} #{condition_string(conditions)}"
         end
@@ -51,7 +61,7 @@ module Neo4j::ActiveNode
         end
 
         def from_field_and_value(field, value)
-          "#{field}=`#{value}`"
+          "#{self.field(field)}='#{value}'"
         end
 
         def condition_string(conditions)
@@ -74,7 +84,7 @@ module Neo4j::ActiveNode
         end
 
         def from_field_and_value(field, label)
-          "#{field}:#{label}"
+          "#{self.field(field)}:#{label}"
         end
 
         def condition_string(conditions)
@@ -88,13 +98,7 @@ module Neo4j::ActiveNode
 
       class << self
         def from_string(value)
-          if value.match('\.')
-            value
-          elsif [:id, :neo_id].include?(value.to_sym)
-            'ID(n)'
-          else
-            "n.#{value}"
-          end
+          self.field(value)
         end
 
         def from_symbol(value)
@@ -102,11 +106,7 @@ module Neo4j::ActiveNode
         end
 
         def from_field_and_value(field, label)
-          if [:id, :neo_id].include?(field.to_sym)
-            "ID(n) #{label.upcase}"
-          else
-            "n.#{field} #{label.upcase}"
-          end
+          "#{self.field(field)} #{label.upcase}"
         end
 
         def condition_string(conditions)

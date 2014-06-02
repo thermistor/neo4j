@@ -56,6 +56,10 @@ module Neo4j::ActiveNode
         count ? result.take(count) : result.first
       end
 
+      def find_by(attributes = {})
+        self.where(attributes).first
+      end
+
       def to_cypher
         conditions_by_class = @conditions.group_by(&:class)
 

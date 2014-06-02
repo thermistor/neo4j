@@ -90,6 +90,8 @@ module Neo4j::ActiveNode
         def from_string(value)
           if value.match('\.')
             value
+          elsif [:id, :neo_id].include?(value.to_sym)
+            'ID(n)'
           else
             "n.#{value}"
           end
@@ -100,7 +102,11 @@ module Neo4j::ActiveNode
         end
 
         def from_field_and_value(field, label)
-          "n.#{field} #{label.upcase}"
+          if [:id, :neo_id].include?(field.to_sym)
+            "ID(n) #{label.upcase}"
+          else
+            "n.#{field} #{label.upcase}"
+          end
         end
 
         def condition_string(conditions)

@@ -66,7 +66,7 @@ module Neo4j
 
         # Like calling #query_as, but for when you don't care about the variable name
         def query
-          query_as(@node_var || :result)
+          @query ||= query_as(@node_var || :result)
         end
 
         # Build a Neo4j::Core::Query object for the QueryProxy

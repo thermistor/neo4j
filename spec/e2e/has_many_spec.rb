@@ -24,6 +24,10 @@ describe 'has_n' do
   let(:friend1) { clazz_a.create }
   let(:friend2) { clazz_a.create }
 
+  it 'should always return the same QueryProxy object' do
+    node.friends.object_id.should == node.friends.object_id
+  end
+
   describe 'rel_type' do
     it 'creates the correct type' do
       node.friends << friend1

@@ -15,6 +15,10 @@ describe "has_one" do
       has_one :in, :parent, origin: :children, model_class: 'HasOneA'
     end
 
+    it 'should always return the same QueryProxy object' do
+      HasOneB.parent_query_proxy({}).object_id.should == HasOneB.parent_query_proxy({}).object_id
+    end
+
     it 'find the nodes via the has_one accessor' do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')

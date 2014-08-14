@@ -33,7 +33,7 @@ module Neo4j::ActiveNode
         # TODO: Make assignment more efficient? (don't delete nodes when they are being assigned)
         module_eval(%Q{
           def #{name}(node = nil, rel = nil)
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, self.class.associations[#{name.inspect}], session: self.class.neo4j_session, start_object: self, node: node, rel: rel)
+            self.class.#{name}_query_proxy(start_object: self, node: node, rel: rel)
           end
 
           def #{name}=(other_nodes)
@@ -49,8 +49,14 @@ module Neo4j::ActiveNode
           end}, __FILE__, __LINE__)
 
         instance_eval(%Q{
+          def #{name}_query_proxy(options = {})
+            @query_proxies ||= {}
+            @query_proxies['#{name}'] ||= {}
+            @query_proxies['#{name}'][options] ||= Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, @associations[#{name.inspect}], {session: self.neo4j_session}.merge(options))
+          end
+
           def #{name}(node = nil, rel = nil)
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, @associations[#{name.inspect}], session: self.neo4j_session, query_proxy: self.query_proxy, node: node, rel: rel)
+            #{name}_query_proxy(query_proxy: self.query_proxy, node: node, rel: rel)
           end}, __FILE__, __LINE__)
       end
 
@@ -85,7 +91,9 @@ module Neo4j::ActiveNode
 
         instance_eval(%Q{
           def #{name}_query_proxy(options = {})
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, @associations[#{name.inspect}], {session: self.neo4j_session}.merge(options))
+            @query_proxies ||= {}
+            @query_proxies['#{name}'] ||= {}
+            @query_proxies['#{name}'][options] ||= Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, @associations[#{name.inspect}], {session: self.neo4j_session}.merge(options))
           end
 
           def #{name}(node = nil, rel = nil)

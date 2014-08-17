@@ -43,7 +43,6 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'does not allow to set undeclared properties using create' do
-      node = double('unwrapped_node', props: {})
       @session.should_not_receive(:create_node)
       expect { MyThing.create(bar: 43) }.to raise_error Neo4j::Shared::Property::UndefinedPropertyError
     end
@@ -61,10 +60,10 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'will delete old relationship before creating a new one' do
-      parent = double("parent node", neo_id: 1, persisted?: true)
+      parent = double("parent node", neo_id: 3, persisted?: true)
       old_rel = double("old relationship")
 
-      node = double('unwrapped_node', props: {a: 999}, rel: old_rel, neo_id: 2)
+      node = double('unwrapped_node', props: {a: 999}, rel: old_rel, neo_id: 4)
 
       @session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
       @session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)

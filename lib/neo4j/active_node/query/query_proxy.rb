@@ -108,24 +108,40 @@ module Neo4j
         def create(other_nodes, properties)
           raise "Can only create associations on associations" unless @association
           other_nodes = [other_nodes].flatten
+          raise ArgumentError, "Node must be of the association's class when model is specified (#{@model})" if @model && other_nodes.any? {|other_node| other_node.class != @model }
 
-          raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| other_node.class != @model }
           other_nodes.each do |other_node|
             #Neo4j::Transaction.run do
-              other_node.save if not other_node.persisted?
+            other_node.save if not other_node.persisted?
 
-              return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
+            return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
 
-              _association_query_start(:start)
-                .match(end: other_node.class)
-                .where(end: {neo_id: other_node.neo_id})
-                .create("start#{_association_arrow(properties, true)}end").exec
-
-              @association.perform_callback(@options[:start_object], other_node, :after)
-            #end
+            case @association.layout
+              when :list
+                create_list_layout(other_node, properties)
+              else
+                create_default_layout(other_node, properties)
+            end
           end
+
         end
 
+        def create_list_layout(other_node, properties)
+          start_node = @options[:start_object]
+          start_node.rel?()
+          start_node.create_rel(@association.relationship_type)
+        end
+
+        def create_default_layout(other_node, properties)
+          # MATCH (start:`Model_18_20141408394474528`), (end:`Model_18_20141408394474528`) WHERE ID(start) = 984 AND ID(end) = 986 CREATE start-[rel0:`#friends` {since: 1997}]->end
+          _association_query_start(:start)
+          .match(end: other_node.class)
+          .where(end: {neo_id: other_node.neo_id})
+          .create("start#{_association_arrow(properties, true)}end").exec
+
+          @association.perform_callback(@options[:start_object], other_node, :after)
+          #end
+        end
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
         def method_missing(method_name, *args)

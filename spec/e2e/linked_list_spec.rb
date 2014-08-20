@@ -10,13 +10,6 @@ describe 'linked list' do
         include Neo4j::ActiveNode
         property :name
         has_many :out, :parts, model_class: self, layout: :list  # support sorted_list ?, or layout: list, layout_type:
-
-        # Should be generated or something
-        before_destroy do
-          # check links
-          puts "DESTROY !!!!!!!!!!!!!!!!"
-        end
-
       end
     end
 

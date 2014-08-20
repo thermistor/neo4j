@@ -12,6 +12,7 @@ require "active_attr/rspec"
 require 'neo4j-core'
 require 'neo4j'
 require 'unique_class'
+require 'ostruct'
 
 require 'pry' if ENV['APP_ENV'] == 'debug'
 

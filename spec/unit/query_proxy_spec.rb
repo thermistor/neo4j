@@ -1,91 +1,104 @@
 require 'spec_helper'
 
-describe Neo4j::ActiveNode::Query::QueryProxy do
-  let (:qp) { Neo4j::ActiveNode::Query::QueryProxy.new(Object) }
-  let (:session) { double("A session")}
-  let (:node) { double("A node object", foo: 'bar' ) }
-  let (:rel)  { double("A rel object")}
+module Neo4j::ActiveNode::Query
+  describe QueryProxy do
+    let (:qp) { QueryProxy.new(Object) }
+    let (:session) { double("A session") }
+    let (:node) { double("A node object", foo: 'bar') }
+    let (:rel) { double("A rel object") }
 
-  describe 'each_with_rel' do
-    it 'yields a node and rel object' do
-      expect(qp).to receive(:pluck).and_return([node, rel])
-      expect(qp.each_with_rel{|n, r| }).to eq [node, rel]
-    end
-  end
+    describe 'layout: list' do
 
-  describe 'each_rel' do
-    context 'without a block' do
-      it 'calls to_enum, sends :each with node false, rel true' do
-        expect(qp).to receive(:to_enum).with(:each, false, true)
-        qp.each_rel
+      it 'does it' do
+        model = OpenStruct #
+        node = OpenStruct.new(persisted?: true, neo_id: 42, rel?: false)
+        association = Neo4j::ActiveNode::HasN::Association.new(:has_many, :out, :parts, layout: :list)
+        q = QueryProxy.new(model, association, start_object: node)
+        #expect(node).to receive(:rel?).with(:parts).and_return(false)
+        q << node
       end
     end
-
-    context 'with a block' do
-      it 'sends the block to :each with node false, rel true' do
-        expect(qp).not_to receive(:to_enum)
-        expect(qp).to receive(:each).with(false, true)
-        qp.each_rel{|r| }
-      end
-
-      it 'calls pluck and executes the block' do
-        expect(qp).to receive(:pluck).and_return([rel])
-        expect(rel).to receive(:name)
-        qp.each_rel{|r| r.name }
-      end
-    end
-  end
-
-  describe 'each_with_rel' do
-    context 'without a block' do
-      it 'calls to_enum, sends :each with node true, rel true' do
-        expect(qp).to receive(:to_enum).with(:each, true, true)
-        qp.each_with_rel
-      end
-    end
-
-    context 'with a block' do
-      it 'sends the block to :each with node true, rel true' do
-        expect(qp).not_to receive(:to_enum)
-        expect(qp).to receive(:each).with(true, true)
-        qp.each_with_rel{|n, r| }
-      end
-
-      it 'calls pluck and executes the block' do
+    describe 'each_with_rel' do
+      it 'yields a node and rel object' do
         expect(qp).to receive(:pluck).and_return([node, rel])
-        expect(node).to receive(:name)
-        expect(rel).to receive(:name)
-        qp.each_with_rel{|n, r| n.name and r.name }        
+        expect(qp.each_with_rel { |n, r|}).to eq [node, rel]
       end
     end
-  end
 
-  describe 'to_cypher' do
-    let(:query_result) { double("the result of calling :query")}
-    it 'calls query.to_cypher' do
-      expect(qp).to receive(:query).and_return(query_result)
-      expect(query_result).to receive(:to_cypher).and_return(String)
-      qp.to_cypher
-    end
-  end
-
-  describe '_association_chain_var' do
-    context 'when missing start_object and query_proxy' do
-      it 'raises a crazy error' do
-        expect{qp.send(:_association_chain_var)}.to raise_error 'Crazy error'
+    describe 'each_rel' do
+      context 'without a block' do
+        it 'calls to_enum, sends :each with node false, rel true' do
+          expect(qp).to receive(:to_enum).with(:each, false, true)
+          qp.each_rel
+        end
       end
 
-      it 'needs a better error than "crazy error"'
-    end
-  end
+      context 'with a block' do
+        it 'sends the block to :each with node false, rel true' do
+          expect(qp).not_to receive(:to_enum)
+          expect(qp).to receive(:each).with(false, true)
+          qp.each_rel { |r|}
+        end
 
-  describe '_association_query_start' do
-    context 'when missing start_object and query_proxy' do
-      it 'raises a crazy error' do
-        expect{qp.send(:_association_query_start, nil)}.to raise_error 'Crazy error'
+        it 'calls pluck and executes the block' do
+          expect(qp).to receive(:pluck).and_return([rel])
+          expect(rel).to receive(:name)
+          qp.each_rel { |r| r.name }
+        end
+      end
+    end
+
+    describe 'each_with_rel' do
+      context 'without a block' do
+        it 'calls to_enum, sends :each with node true, rel true' do
+          expect(qp).to receive(:to_enum).with(:each, true, true)
+          qp.each_with_rel
+        end
       end
 
-      it 'needs a better error than "crazy error"'
+      context 'with a block' do
+        it 'sends the block to :each with node true, rel true' do
+          expect(qp).not_to receive(:to_enum)
+          expect(qp).to receive(:each).with(true, true)
+          qp.each_with_rel { |n, r|}
+        end
+
+        it 'calls pluck and executes the block' do
+          expect(qp).to receive(:pluck).and_return([node, rel])
+          expect(node).to receive(:name)
+          expect(rel).to receive(:name)
+          qp.each_with_rel { |n, r| n.name and r.name }
+        end
+      end
+    end
+
+    describe 'to_cypher' do
+      let(:query_result) { double("the result of calling :query") }
+      it 'calls query.to_cypher' do
+        expect(qp).to receive(:query).and_return(query_result)
+        expect(query_result).to receive(:to_cypher).and_return(String)
+        qp.to_cypher
+      end
+    end
+
+    describe '_association_chain_var' do
+      context 'when missing start_object and query_proxy' do
+        it 'raises a crazy error' do
+          expect { qp.send(:_association_chain_var) }.to raise_error 'Crazy error'
+        end
+
+        it 'needs a better error than "crazy error"'
+      end
+    end
+
+    describe '_association_query_start' do
+      context 'when missing start_object and query_proxy' do
+        it 'raises a crazy error' do
+          expect { qp.send(:_association_query_start, nil) }.to raise_error 'Crazy error'
+        end
+
+        it 'needs a better error than "crazy error"'
+      end
     end
   end
 end

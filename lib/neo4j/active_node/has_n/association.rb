@@ -4,13 +4,14 @@ module Neo4j
   module ActiveNode
     module HasN
       class Association
-        attr_reader :type, :name, :relationship, :direction
+        attr_reader :type, :name, :relationship, :direction, :layout
 
         def initialize(type, direction, name, options = {})
           check_valid_type_and_dir(type, direction)
           @type = type.to_sym
           @name = name
           @direction = direction.to_sym
+          @layout = options[:layout]
           @target_class_name_from_name = name.to_s.classify
           set_vars_from_options(options)
         end

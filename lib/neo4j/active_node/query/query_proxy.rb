@@ -140,6 +140,7 @@ module Neo4j
               else
                 create_default_layout(other_node, properties)
             end
+            @association.perform_callback(@options[:start_object], other_node, :after)
           end
 
         end
@@ -166,9 +167,6 @@ module Neo4j
           .match(end: other_node.class)
           .where(end: {neo_id: other_node.neo_id})
           .create("start#{_association_arrow(properties, true)}end").exec
-
-          @association.perform_callback(@options[:start_object], other_node, :after)
-          #end
         end
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing

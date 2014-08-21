@@ -9,13 +9,15 @@ module Neo4j::ActiveNode::Query
 
     describe 'layout: list' do
 
-      it 'does it' do
-        model = OpenStruct #
-        node = OpenStruct.new(persisted?: true, neo_id: 42, rel?: false)
-        association = Neo4j::ActiveNode::HasN::Association.new(:has_many, :out, :parts, layout: :list)
-        q = QueryProxy.new(model, association, start_object: node)
+      it 'create the first relationship if list is empty' do
+        end_node = double(:end_node, persisted?: true)
+        start_node = OpenStruct.new(persisted?: true, neo_id: 42, rel?: false)
+        expect(start_node).to receive(:rel).with(dir: :outgoing, type: :friends)
+        expect(start_node).to receive(:create_rel).with(:friends, end_node)
+        association = Neo4j::ActiveNode::HasN::Association.new(:has_many, :out, :parts, type: :friends, model_class: false, layout: :list)
+        q = QueryProxy.new(nil, association, start_object: start_node)
         #expect(node).to receive(:rel?).with(:parts).and_return(false)
-        q << node
+        q << end_node
       end
     end
     describe 'each_with_rel' do

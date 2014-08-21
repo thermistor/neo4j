@@ -17,14 +17,32 @@ module Neo4j
         end
 
         def each(node = true, rel = nil, &block)
+          case @association && @association.layout
+            when :list
+              each_list_layout(&block)
+            else
+              each_default_layout(node,rel,&block)
+          end
+
+        end
+
+        def each_list_layout(&block)
+          rel_type = "`#{@association.relationship_type}`"
+          cypher = _association_query_start(:n).match("n-[:#{rel_type}*]->(other)")
+          cypher.pluck(:other).each do |obj|
+            block.call obj
+          end
+        end
+
+        def each_default_layout(node, rel, &block)
           if node && rel
             self.pluck((@node_var || :result), @rel_var).each do |obj, rel|
-              yield obj, rel
+              block.call obj, rel
             end
           else
             pluck_this = !rel ? (@node_var || :result) : @rel_var
             self.pluck(pluck_this).each do |obj|
-              yield obj
+              block.call obj
             end
           end
         end

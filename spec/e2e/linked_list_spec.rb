@@ -9,20 +9,29 @@ describe 'linked list' do
       UniqueClass.create do
         include Neo4j::ActiveNode
         property :name
-        has_many :out, :parts, model_class: self, layout: :list  # support sorted_list ?, or layout: list, layout_type:
+        has_many :out, :parts, type: :friends, model_class: false, layout: :list  # support sorted_list ?, or layout: list, layout_type:
       end
     end
 
     context 'append nodes' do
       it 'can append new nodes to an empty list' do
-        n = clazz.create
-        n1 = clazz.create
-        n2 = clazz.create
+        # TODO dry
+        n = clazz.create name: 'n'
+        n1 = Neo4j::Node.create name: 'n1'
+        n2 = Neo4j::Node.create name: 'n2'
         n.parts << n1 << n2
 
-        expect(n.parts.to_a).to eq([n2,n1])  # append last first !
         res = n.query_as(:n).match("n-[:friends*]->(other)").pluck(:other)
-        expect(res.to_a).to eq([n1,n2])
+        expect(res.map {|n|n[:name]}).to eq(['n2', 'n1'])
+      end
+
+      it 'can retrieve those nodes' do
+        n = clazz.create name: 'n'
+        n1 = Neo4j::Node.create name: 'n1'
+        n2 = Neo4j::Node.create name: 'n2'
+        n.parts << n1 << n2
+
+        expect(n.parts.map {|n|n[:name]}).to eq(['n1', 'n2'])  # append last first !
       end
     end
 

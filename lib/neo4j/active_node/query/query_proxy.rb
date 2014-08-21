@@ -128,8 +128,18 @@ module Neo4j
 
         def create_list_layout(other_node, properties)
           start_node = @options[:start_object]
-          start_node.rel?()
-          start_node.create_rel(@association.relationship_type)
+          rel_type = @association.relationship_type
+          rel = start_node.rel(dir: :outgoing, type: rel_type)
+
+          if rel
+            before_node = rel.start_node
+            after_node = rel.end_node
+            rel.del
+            before_node.create_rel(@association.relationship_type, other_node)
+            other_node.create_rel(@association.relationship_type, after_node)
+          else
+            start_node.create_rel(@association.relationship_type, other_node)
+          end
         end
 
         def create_default_layout(other_node, properties)

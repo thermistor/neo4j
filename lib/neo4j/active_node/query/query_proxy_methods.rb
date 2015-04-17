@@ -17,12 +17,14 @@ module Neo4j
         end
 
         # @return [Integer] number of nodes of this class
-        def count(distinct = nil, target = nil)
-          fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
+        def count(target = nil)
           query_with_target(target) do |var|
-            q = distinct.nil? ? var : "DISTINCT #{var}"
-            self.query.reorder.pluck("count(#{q}) AS #{var}").first
+            self.query.reorder.pluck("count(#{var})").first
           end
+        end
+
+        def count_distinct
+          count("DISTINCT #{identity}")
         end
 
         alias_method :size,   :count

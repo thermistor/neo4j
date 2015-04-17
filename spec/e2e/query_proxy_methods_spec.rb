@@ -155,15 +155,15 @@ describe 'query_proxy_methods' do
     end
 
     it 'can tell you the number of distinct matching objects' do
-      expect(@john.lessons.count(:distinct)).to eq 1
+      expect(@john.lessons.count_distinct).to eq 1
     end
 
     it 'raises an exception if a bad parameter is passed' do
-      expect { @john.lessons.count(:foo) }.to raise_error(Neo4j::ActiveNode::Query::QueryProxyMethods::InvalidParameterError)
+      expect { @john.lessons.count(:foo) }.to raise_error(Neo4j::Session::CypherError)
     end
 
     it 'works on an object earlier in the chain' do
-      expect(Student.as(:s).lessons.where(name: 'history').count(:distinct, :s)).to eq 1
+      expect(Student.as(:s).lessons.where(name: 'history').count('DISTINCT s')).to eq 1
     end
 
     it 'works with order clause' do

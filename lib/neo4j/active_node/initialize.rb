@@ -13,4 +13,14 @@ module Neo4j::ActiveNode::Initialize
     changed_attributes && changed_attributes.clear
     @attributes = convert_and_assign_attributes(properties)
   end
+
+  def module_init(id, properties, labels)
+    @neo_id = id
+    @labels = labels.map!(&:to_sym)
+    self.class.extract_association_attributes!(properties)
+    @_persisted_obj = self
+    changed_attributes && changed_attributes.clear
+    @attributes = convert_and_assign_attributes(properties)
+    self
+  end
 end

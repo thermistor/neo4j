@@ -21,7 +21,7 @@ describe Neo4j::ActiveNode::Persistence do
   describe 'initialize' do
     it 'can take a hash of properties' do
       o = clazz.new(name: 'kalle', age: '42')
-      o.props.should eq(name: 'kalle', age: 42)
+      o.node_props.should eq(name: 'kalle', age: 42)
     end
 
     it 'raises an error when given a property which is not defined' do
@@ -76,7 +76,7 @@ describe Neo4j::ActiveNode::Persistence do
         end_props   = {name: 'jasmine', age: 5, _classname: 'MyClass'}
         o = clazz.new
 
-        o.stub(:props).and_return(start_props)
+        o.stub(:node_props).and_return(start_props)
         o.stub(:serialized_properties).and_return({})
         o.class.stub(:name).and_return('MyClass') # set_classname looks for this
         clazz.stub(:neo4j_session).and_return(session)
@@ -86,7 +86,7 @@ describe Neo4j::ActiveNode::Persistence do
         expect(o).to receive(:init_on_load).with(node, end_props)
         allow_any_instance_of(Object).to receive(:serialized_properties_keys).and_return([])
 
-        expect(node).to receive(:props).and_return(end_props)
+        expect(node).to receive(:node_props).and_return(end_props)
 
         o.save
       end
@@ -116,7 +116,7 @@ describe Neo4j::ActiveNode::Persistence do
     it 'does not return undefined properties' do
       o = clazz.new # name not defined
       o.age = '18'
-      o.props.should eq(age: 18)
+      o.node_props.should eq(age: 18)
     end
   end
 end

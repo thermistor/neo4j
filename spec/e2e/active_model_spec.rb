@@ -432,7 +432,6 @@ describe 'Neo4j::ActiveNode' do
     it 'does not persist updated properties until they are saved' do
       person = Person.create(name: 'andreas', age: 21)
       person[:age] = 22
-
       person2 = Neo4j::Node.load(person.neo_id)
       person2[:age].should eq(21)
     end

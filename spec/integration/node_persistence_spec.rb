@@ -20,7 +20,7 @@ describe 'Neo4j::ActiveNode' do
 
   describe 'new' do
     it 'does not allow setting undeclared properties' do
-      MyThing.new(a: '4').props.should == {a: '4'}
+      MyThing.new(a: '4').node_props.should == {a: '4'}
     end
 
     it 'undefined properties are found with the attributes method' do
@@ -33,7 +33,7 @@ describe 'Neo4j::ActiveNode' do
       node = double('unwrapped_node', props: {a: 999})
       session.should_receive(:create_node).with({a: 1, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.create(a: 1)
-      thing.props.should == {a: 999}
+      thing.node_props.should == {a: 999}
     end
 
     it 'stores undefined attributes' do
@@ -47,38 +47,6 @@ describe 'Neo4j::ActiveNode' do
       session.should_not_receive(:create_node)
       expect { MyThing.create(bar: 43) }.to raise_error Neo4j::Shared::Property::UndefinedPropertyError
     end
-
-    # skip "SKIP, old tests, neo4j-core has been updated. Is this still needed?"
-    # it 'can create relationships' do
-    #   parent = double("parent node", neo_id: 1, persisted?: true)
-    #   node = double('unwrapped_node', props: {a: 999}, rel: nil, neo_id: 2)
-    #   node.class.stub(:mapped_label_name).and_return('MyThing')
-    #   node.stub(:exist?).and_return(true)
-    #   session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
-    #   session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)
-    #   session.should_receive(:_query).at_most(1000)
-    #   #session.should_receive(:begin_tx)
-    #   thing = MyThing.create(a: 1,  parent: parent)
-    #   thing.props.should == {a: 999}
-    # end
-
-    # it 'will delete old relationship before creating a new one' do
-    #   parent = double("parent node", neo_id: 1, persisted?: true)
-    #   old_rel = double("old relationship")
-
-    #   node = double('unwrapped_node', props: {a: 999}, rel: old_rel, neo_id: 2)
-
-    #   node.class.stub(:mapped_label_name).and_return('MyThing')
-    #   node.stub(:exist?).and_return(true)
-    #   session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
-    #   session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)
-    #   session.should_receive(:_query).exactly(2).times
-
-    #   #session.should_receive(:begin_tx)
-
-    #   thing = MyThing.create(a: 1,  parent: parent)
-    #   thing.props.should == {a: 999}
-    # end
   end
 
   describe 'save' do

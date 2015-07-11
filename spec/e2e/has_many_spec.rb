@@ -197,16 +197,15 @@ describe 'has_many' do
       let(:node2) { double('unpersisted node', props: {name: 'Brad'}) }
 
       it 'creates a new relationship when given unpersisted node and given properties' do
-        node.friends.create(Person.new(name: 'Brad'), since: 1996)
+        expect do
+          node.friends.create(Person.new(name: 'Brad'), since: 1996)
+        end.to change { node.friends.where(name: 'Brad').rel_where(since: 1996).count }
+
         # node2.stub(:persisted?).and_return(false)
         # node2.stub(:save).and_return(true)
         # node2.stub(:neo_id).and_return(2)
 
         # node.friends.create(node2, since: 1996)
-        r = node.rel(dir: :outgoing, type: 'FRIENDS')
-
-        r[:since].should eq(1996)
-        r.end_node.name.should eq('Brad')
       end
 
       it 'creates a new relationship when given an array of unpersisted nodes and given properties' do

@@ -83,7 +83,7 @@ module Neo4j::Shared
 
 
     # @return [Hash] all defined and none nil properties
-    def props
+    def node_props
       attributes.reject { |_, v| v.nil? }.symbolize_keys
     end
 

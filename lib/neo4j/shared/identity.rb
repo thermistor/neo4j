@@ -13,7 +13,8 @@ module Neo4j::Shared
 
     # @return [Integer, nil] the neo4j id of the node if persisted or nil
     def neo_id
-      _persisted_obj ? _persisted_obj.neo_id : nil
+      return nil unless _persisted_obj
+      _persisted_obj == self ? @neo_id : _persisted_obj.neo_id
     end
 
     def id

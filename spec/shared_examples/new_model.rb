@@ -11,11 +11,11 @@ shared_examples 'new model' do
     end
 
     it 'should allow access to all properties before it is saved' do
-      subject.props.should be_a(Hash)
+      subject.node_props.should be_a(Hash)
     end
 
     it 'should allow properties to be accessed with a symbol' do
-      lambda { subject.props[:test] = true }.should_not raise_error
+      lambda { subject.node_props[:test] = true }.should_not raise_error
     end
   end
 end

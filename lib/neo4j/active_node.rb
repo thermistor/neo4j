@@ -60,7 +60,6 @@ module Neo4j
         attributes.each_pair { |k, v| other.attributes[k] = v }
         inherit_serialized_properties(other) if self.respond_to?(:serialized_properties)
         Neo4j::ActiveNode::Labels.add_wrapped_class(other)
-
         super
       end
 
@@ -90,6 +89,8 @@ module Neo4j
         value = Neo4j::Config[:id_property_type_value]
         id_property(name, type => value) if name && type && value
       end
+
+      include Neo4j::Server::NodeModule if defined?(Neo4j::Server::NodeModule)
     end
 
     ActiveSupport.run_load_hooks(:active_node, self)

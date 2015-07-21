@@ -93,6 +93,10 @@ module Neo4j
       register_neo4j_cypher_logging if Neo4j::Config[:log_cypher_queries]
     end
 
+    config.to_prepare do
+      Neo4j::ActiveNode::Labels::MODELS_FOR_LABELS_CACHE.clear
+    end
+
     console do
       register_neo4j_cypher_logging
     end
